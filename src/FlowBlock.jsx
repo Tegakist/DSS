@@ -30,15 +30,21 @@ export default function FlowBlock() {
       const importedNodes = rows
         .slice(5)
         .map((row, index) => {
-          const label = row[3]; // D列
-          const status = row[1]; // B列
+          const label = row[3];      // D列：標題
+          const status = row[1];     // B列：ステータス
+          const summary = row[4];    // E列：概要
+          const questionNo = row[5]; // F列：質疑書No.
+          const questionDate = row[6]; // G列：質疑書提出日
 
           return label
             ? {
                 id: `node-${index}`,
                 label,
                 status,
-                excelRow: index + 6, // 実際のExcel上の行番号（6行目から）
+                summary,
+                questionNo,
+                questionDate,
+                excelRow: index + 6,
               }
             : null;
         })
@@ -63,10 +69,13 @@ export default function FlowBlock() {
     const sheet = { ...originalSheet };
 
     nodes.forEach((node) => {
-      const statusCell = "B" + node.excelRow;
-      const labelCell = "D" + node.excelRow;
-      sheet[statusCell] = { ...(sheet[statusCell] || {}), v: node.status };
-      sheet[labelCell] = { ...(sheet[labelCell] || {}), v: node.label };
+      const row = node.excelRow;
+      sheet["B" + row] = { ...(sheet["B" + row] || {}), v: node.status };
+      sheet["D" + row] = { ...(sheet["D" + row] || {}), v: node.label };
+      // 必要なら以下も保存可能：
+      // sheet["E" + row] = { ...(sheet["E" + row] || {}), v: node.summary };
+      // sheet["F" + row] = { ...(sheet["F" + row] || {}), v: node.questionNo };
+      // sheet["G" + row] = { ...(sheet["G" + row] || {}), v: node.questionDate };
     });
 
     workbook.Sheets[sheetName] = sheet;
@@ -83,7 +92,7 @@ export default function FlowBlock() {
         Excelに保存
       </button>
 
-      <div className="mt-6 grid grid-cols-2 gap-4">
+      <div className="mt-6 grid grid-cols-1 gap-4">
         {nodes.map((node) => (
           <div
             key={node.id}
@@ -91,8 +100,12 @@ export default function FlowBlock() {
               statusColor[node.status] || "bg-gray-200"
             }`}
           >
-            <h2 className="text-lg font-bold mb-2">{node.label}</h2>
-            <div className="flex gap-2">
+            <div className="text-lg font-bold">{node.label}</div>
+            <div className="text-sm text-gray-700 mt-1">概要：{node.summary || "―"}</div>
+            <div className="text-sm text-gray-700">質疑書No.：{node.questionNo || "―"}</div>
+            <div className="text-sm text-gray-700 mb-2">提出日：{node.questionDate || "―"}</div>
+
+            <div className="flex gap-2 mt-2">
               {["済", "回答待"].map((s) => (
                 <button
                   key={s}
