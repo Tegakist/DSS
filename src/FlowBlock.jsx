@@ -30,10 +30,10 @@ export default function FlowBlock() {
       const importedNodes = rows
         .slice(5)
         .map((row, index) => {
-          const label = row[3];      // D列：標題
-          const status = row[1];     // B列：ステータス
-          const summary = row[4];    // E列：概要
-          const questionNo = row[5]; // F列：質疑書No.
+          const label = row[3];        // D列：標題
+          const status = row[1];       // B列：ステータス
+          const summary = row[4];      // E列：概要
+          const questionNo = row[5];   // F列：質疑書No.
           const questionDate = row[6]; // G列：質疑書提出日
 
           return label
@@ -72,7 +72,7 @@ export default function FlowBlock() {
       const row = node.excelRow;
       sheet["B" + row] = { ...(sheet["B" + row] || {}), v: node.status };
       sheet["D" + row] = { ...(sheet["D" + row] || {}), v: node.label };
-      // 必要なら以下も保存可能：
+      // 他の列も保存するなら以下も利用可能：
       // sheet["E" + row] = { ...(sheet["E" + row] || {}), v: node.summary };
       // sheet["F" + row] = { ...(sheet["F" + row] || {}), v: node.questionNo };
       // sheet["G" + row] = { ...(sheet["G" + row] || {}), v: node.questionDate };
@@ -101,9 +101,18 @@ export default function FlowBlock() {
             }`}
           >
             <div className="text-lg font-bold">{node.label}</div>
-            <div className="text-sm text-gray-700 mt-1">概要：{node.summary || "―"}</div>
-            <div className="text-sm text-gray-700">質疑書No.：{node.questionNo || "―"}</div>
-            <div className="text-sm text-gray-700 mb-2">提出日：{node.questionDate || "―"}</div>
+
+            <div className="text-sm text-gray-700 mt-1 whitespace-pre-wrap break-words">
+              概要：{node.summary || "―"}
+            </div>
+
+            <div className="text-sm text-gray-700">
+              質疑書No.：{node.questionNo || "―"}
+            </div>
+
+            <div className="text-sm text-gray-700 mb-2">
+              提出日：{node.questionDate || "―"}
+            </div>
 
             <div className="flex gap-2 mt-2">
               {["済", "回答待"].map((s) => (
