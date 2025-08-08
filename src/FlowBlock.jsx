@@ -12,6 +12,18 @@ export default function FlowBlock() {
     回答待: "bg-red-300",
   };
 
+  // Excelシリアル日付 → YYYY/MM/DD 形式へ変換
+  const formatExcelDate = (serial) => {
+    if (typeof serial !== "number") return serial;
+    const utc_days = Math.floor(serial - 25569);
+    const utc_value = utc_days * 86400;
+    const date_info = new Date(utc_value * 1000);
+    const yyyy = date_info.getFullYear();
+    const mm = String(date_info.getMonth() + 1).padStart(2, "0");
+    const dd = String(date_info.getDate()).padStart(2, "0");
+    return `${yyyy}/${mm}/${dd}`;
+  };
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -72,10 +84,7 @@ export default function FlowBlock() {
       const row = node.excelRow;
       sheet["B" + row] = { ...(sheet["B" + row] || {}), v: node.status };
       sheet["D" + row] = { ...(sheet["D" + row] || {}), v: node.label };
-      // 他の列も保存するなら以下も利用可能：
-      // sheet["E" + row] = { ...(sheet["E" + row] || {}), v: node.summary };
-      // sheet["F" + row] = { ...(sheet["F" + row] || {}), v: node.questionNo };
-      // sheet["G" + row] = { ...(sheet["G" + row] || {}), v: node.questionDate };
+      // 必要に応じて他列も書き戻し可能
     });
 
     workbook.Sheets[sheetName] = sheet;
@@ -111,7 +120,10 @@ export default function FlowBlock() {
             </div>
 
             <div className="text-sm text-gray-700 mb-2">
-              提出日：{node.questionDate || "―"}
+              提出日：
+              {node.questionDate
+                ? formatExcelDate(node.questionDate)
+                : "―"}
             </div>
 
             <div className="flex gap-2 mt-2">
