@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 
+// ステータスごとの背景色
 const statusColor = {
   済: "bg-green-300",
   回答待: "bg-red-300",
@@ -9,24 +10,20 @@ const statusColor = {
 export default function FlowBlock() {
   const [nodes, setNodes] = useState([]);
 
+  // ローカルストレージから読み込み
   useEffect(() => {
     const saved = localStorage.getItem("nodes");
     if (saved) {
       setNodes(JSON.parse(saved));
-    } else {
-      setNodes([
-        { id: "A", label: "設計図受領", status: "済" },
-        { id: "B", label: "不明点確認", status: "回答待", reason: "設計からの回答待ち" },
-        { id: "C", label: "作図開始", status: "回答待", reason: "上流の確認未完了" },
-        { id: "D", label: "レビュー提出", status: "回答待" },
-      ]);
     }
   }, []);
 
+  // ローカルストレージに保存
   useEffect(() => {
     localStorage.setItem("nodes", JSON.stringify(nodes));
   }, [nodes]);
 
+  // ステータス変更
   const handleStatusChange = (id, newStatus) => {
     const updated = nodes.map((node) =>
       node.id === id ? { ...node, status: newStatus } : node
@@ -34,6 +31,7 @@ export default function FlowBlock() {
     setNodes(updated);
   };
 
+  // ノード追加
   const handleAdd = () => {
     const label = prompt("工程名を入力してください");
     if (!label) return;
@@ -45,12 +43,14 @@ export default function FlowBlock() {
     setNodes([...nodes, newNode]);
   };
 
+  // ノード削除
   const handleDelete = (id) => {
     if (confirm("この工程を削除しますか？")) {
       setNodes(nodes.filter((node) => node.id !== id));
     }
   };
 
+  // Excel読み込み（B列=ステータス, D列=ラベル, 6行目から）
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -63,14 +63,15 @@ export default function FlowBlock() {
       const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
       const importedNodes = rows
-        .slice(1)
+        .slice(5) // 6行目から
         .map((row, index) => {
-          const label = row[3];
-          return label
+          const status = row[1]; // B列
+          const label = row[3];  // D列
+          return label && (status === "済" || status === "回答待")
             ? {
-                id: `node-${index}`,
+                id: `node-${Date.now()}-${index}`,
                 label,
-                status: "回答待",
+                status,
               }
             : null;
         })
@@ -83,7 +84,7 @@ export default function FlowBlock() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">進捗阻害フロー図（試作）</h1>
+      <h1 className="text-2xl font-bold">進捗阻害フロー図（Excel対応版）</h1>
 
       <div className="space-x-4">
         <button
@@ -104,9 +105,7 @@ export default function FlowBlock() {
             } transition-all relative`}
           >
             <div className="font-semibold text-lg">{node.label}</div>
-            {node.reason && (
-              <div className="text-sm mt-1 text-gray-700">理由：{node.reason}</div>
-            )}
+
             <div className="mt-3 flex flex-wrap gap-2">
               {Object.keys(statusColor).map((s) => (
                 <button
@@ -122,6 +121,7 @@ export default function FlowBlock() {
                 </button>
               ))}
             </div>
+
             <button
               onClick={() => handleDelete(node.id)}
               className="absolute top-1 right-2 text-xs text-red-500"
