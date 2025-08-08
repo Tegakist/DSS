@@ -12,7 +12,7 @@ export default function FlowBlock() {
     回答待: "bg-red-300",
   };
 
-  // Excelシリアル日付 → YYYY/MM/DD 形式へ変換
+  // Excelシリアル日付 → YYYY/MM/DD 表示用
   const formatExcelDate = (serial) => {
     if (typeof serial !== "number") return serial;
     const utc_days = Math.floor(serial - 25569);
@@ -42,11 +42,11 @@ export default function FlowBlock() {
       const importedNodes = rows
         .slice(5)
         .map((row, index) => {
-          const label = row[3];        // D列：標題
-          const status = row[1];       // B列：ステータス
-          const summary = row[4];      // E列：概要
-          const questionNo = row[5];   // F列：質疑書No.
-          const questionDate = row[6]; // G列：質疑書提出日
+          const label = row[3];        // D列
+          const status = row[1];       // B列
+          const summary = row[4];      // E列
+          const questionNo = row[5];   // F列
+          const questionDate = row[6]; // G列
 
           return label
             ? {
@@ -82,9 +82,22 @@ export default function FlowBlock() {
 
     nodes.forEach((node) => {
       const row = node.excelRow;
-      sheet["B" + row] = { ...(sheet["B" + row] || {}), v: node.status };
-      sheet["D" + row] = { ...(sheet["D" + row] || {}), v: node.label };
-      // 必要に応じて他列も書き戻し可能
+
+      sheet["B" + row] = { v: node.status, t: "s" };
+      sheet["D" + row] = { v: node.label, t: "s" };
+
+      if (typeof node.questionDate === "number") {
+        sheet["G" + row] = {
+          v: node.questionDate,
+          t: "n",
+          z: "yyyy/mm/dd", // 日付形式で表示される
+        };
+      } else {
+        sheet["G" + row] = {
+          v: node.questionDate || "",
+          t: "s",
+        };
+      }
     });
 
     workbook.Sheets[sheetName] = sheet;
