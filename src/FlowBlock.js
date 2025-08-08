@@ -22,11 +22,10 @@ export default function FlowBlock() {
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-      // D列（列番号3）を抽出し、空欄以外をノードに
       const importedNodes = rows
-        .slice(1) // ヘッダー行除外
+        .slice(1) // 1行目はヘッダーと仮定
         .map((row, index) => {
-          const label = row[3]; // D列
+          const label = row[3]; // D列 = index 3
           return label
             ? {
                 id: `node-${index}`,
@@ -35,7 +34,7 @@ export default function FlowBlock() {
               }
             : null;
         })
-        .filter(Boolean);
+        .filter(Boolean); // null を除外
 
       setNodes(importedNodes);
     };
@@ -53,11 +52,11 @@ export default function FlowBlock() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Excel読込版：進捗阻害フロー図</h1>
+      <h1 className="text-2xl font-bold">進捗阻害フロー図（Excel読込対応）</h1>
 
       <input
         type="file"
-        accept=".xlsx, .xls"
+        accept=".xlsx,.xls"
         onChange={handleFileUpload}
         className="mb-4"
       />
