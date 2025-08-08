@@ -12,7 +12,6 @@ export default function FlowBlock() {
     回答待: "bg-red-300",
   };
 
-  // Excelシリアル日付 → YYYY/MM/DD 表示用
   const formatExcelDate = (serial) => {
     if (typeof serial !== "number") return serial;
     const utc_days = Math.floor(serial - 25569);
@@ -42,11 +41,12 @@ export default function FlowBlock() {
       const importedNodes = rows
         .slice(5)
         .map((row, index) => {
-          const label = row[3];        // D列
-          const status = row[1];       // B列
-          const summary = row[4];      // E列
-          const questionNo = row[5];   // F列
-          const questionDate = row[6]; // G列
+          const label = row[3];        // D列：標題
+          const status = row[1];       // B列：ステータス
+          const summary = row[4];      // E列：概要
+          const questionNo = row[5];   // F列：質疑書No.
+          const questionDate = row[6]; // G列：質疑書提出日
+          const entryDate = row[7];    // H列：記入日（追加）
 
           return label
             ? {
@@ -56,6 +56,7 @@ export default function FlowBlock() {
                 summary,
                 questionNo,
                 questionDate,
+                entryDate,
                 excelRow: index + 6,
               }
             : null;
@@ -86,15 +87,30 @@ export default function FlowBlock() {
       sheet["B" + row] = { v: node.status, t: "s" };
       sheet["D" + row] = { v: node.label, t: "s" };
 
+      // G列：提出日
       if (typeof node.questionDate === "number") {
         sheet["G" + row] = {
           v: node.questionDate,
           t: "n",
-          z: "yyyy/mm/dd", // 日付形式で表示される
+          z: "yyyy/mm/dd",
         };
       } else {
         sheet["G" + row] = {
           v: node.questionDate || "",
+          t: "s",
+        };
+      }
+
+      // H列：記入日（追加）
+      if (typeof node.entryDate === "number") {
+        sheet["H" + row] = {
+          v: node.entryDate,
+          t: "n",
+          z: "yyyy/mm/dd",
+        };
+      } else {
+        sheet["H" + row] = {
+          v: node.entryDate || "",
           t: "s",
         };
       }
@@ -132,10 +148,17 @@ export default function FlowBlock() {
               質疑書No.：{node.questionNo || "―"}
             </div>
 
-            <div className="text-sm text-gray-700 mb-2">
+            <div className="text-sm text-gray-700">
               提出日：
               {node.questionDate
                 ? formatExcelDate(node.questionDate)
+                : "―"}
+            </div>
+
+            <div className="text-sm text-gray-700 mb-2">
+              記入日：
+              {node.entryDate
+                ? formatExcelDate(node.entryDate)
                 : "―"}
             </div>
 
