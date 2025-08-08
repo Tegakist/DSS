@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import FlowBlock from "./FlowBlock";
+import FlowBlock from "./FlowBlock.jsx";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
