@@ -1,7 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import FlowBlock from "./FlowBlock";
 
-body {
-  @apply bg-gray-100;
-}
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <FlowBlock />
+  </React.StrictMode>
+);
