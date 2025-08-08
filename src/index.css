@@ -1,5 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
-  margin: 0;
-  font-family: sans-serif;
-  background: #f8f9fa;
+  @apply bg-gray-100 text-black;
 }
