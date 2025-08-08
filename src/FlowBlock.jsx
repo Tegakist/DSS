@@ -43,20 +43,20 @@ export default function FlowBlock() {
         .map((row, index) => {
           const label = row[3];        // D列：標題
           const status = row[1];       // B列：ステータス
+          const entryDate = row[2];    // C列：記入日 ← 修正
           const summary = row[4];      // E列：概要
           const questionNo = row[5];   // F列：質疑書No.
           const questionDate = row[6]; // G列：質疑書提出日
-          const entryDate = row[7];    // H列：記入日（追加）
 
           return label
             ? {
                 id: `node-${index}`,
                 label,
                 status,
+                entryDate,
                 summary,
                 questionNo,
                 questionDate,
-                entryDate,
                 excelRow: index + 6,
               }
             : null;
@@ -87,6 +87,20 @@ export default function FlowBlock() {
       sheet["B" + row] = { v: node.status, t: "s" };
       sheet["D" + row] = { v: node.label, t: "s" };
 
+      // C列：記入日（修正済）
+      if (typeof node.entryDate === "number") {
+        sheet["C" + row] = {
+          v: node.entryDate,
+          t: "n",
+          z: "yyyy/mm/dd",
+        };
+      } else {
+        sheet["C" + row] = {
+          v: node.entryDate || "",
+          t: "s",
+        };
+      }
+
       // G列：提出日
       if (typeof node.questionDate === "number") {
         sheet["G" + row] = {
@@ -97,20 +111,6 @@ export default function FlowBlock() {
       } else {
         sheet["G" + row] = {
           v: node.questionDate || "",
-          t: "s",
-        };
-      }
-
-      // H列：記入日（追加）
-      if (typeof node.entryDate === "number") {
-        sheet["H" + row] = {
-          v: node.entryDate,
-          t: "n",
-          z: "yyyy/mm/dd",
-        };
-      } else {
-        sheet["H" + row] = {
-          v: node.entryDate || "",
           t: "s",
         };
       }
