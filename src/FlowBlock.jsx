@@ -7,9 +7,9 @@ export default function FlowBlock() {
   const [sheetName, setSheetName] = useState("");
   const [originalSheet, setOriginalSheet] = useState(null);
 
-  const statusMap = {
-    済: "done",
-    回答待: "waiting",
+  const statusColor = {
+    済: "bg-green-300",
+    回答待: "bg-red-300",
   };
 
   const handleFileUpload = (e) => {
@@ -28,18 +28,17 @@ export default function FlowBlock() {
 
       const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
       const importedNodes = rows
-        .slice(5) // 6行目から
+        .slice(5)
         .map((row, index) => {
           const label = row[3]; // D列
-          const statusText = row[1]; // B列
-          const status = statusMap[statusText] || "pending";
+          const status = row[1]; // B列
 
           return label
             ? {
                 id: `node-${index}`,
                 label,
                 status,
-                excelRow: index + 6, // Excel上の行番号
+                excelRow: index + 6, // 実際のExcel上の行番号（6行目から）
               }
             : null;
         })
@@ -63,23 +62,15 @@ export default function FlowBlock() {
 
     const sheet = { ...originalSheet };
 
-    const statusToText = {
-      done: "済",
-      waiting: "回答待",
-      blocked: "差し戻し",
-      pending: "未処理",
-    };
-
     nodes.forEach((node) => {
-      const statusText = statusToText[node.status] || "";
       const statusCell = "B" + node.excelRow;
       const labelCell = "D" + node.excelRow;
-      sheet[statusCell] = { ...(sheet[statusCell] || {}), v: statusText };
+      sheet[statusCell] = { ...(sheet[statusCell] || {}), v: node.status };
       sheet[labelCell] = { ...(sheet[labelCell] || {}), v: node.label };
     });
 
     workbook.Sheets[sheetName] = sheet;
-    XLSX.writeFile(workbook, "updated_data.xlsx");
+    XLSX.writeFile(workbook, "更新済_進捗データ.xlsx");
   };
 
   return (
@@ -96,27 +87,23 @@ export default function FlowBlock() {
         {nodes.map((node) => (
           <div
             key={node.id}
-            className="rounded-xl p-4 shadow-md bg-white border"
+            className={`p-4 rounded-xl shadow-md ${
+              statusColor[node.status] || "bg-gray-200"
+            }`}
           >
             <h2 className="text-lg font-bold mb-2">{node.label}</h2>
             <div className="flex gap-2">
-              {["done", "waiting", "blocked", "pending"].map((status) => (
+              {["済", "回答待"].map((s) => (
                 <button
-                  key={status}
-                  onClick={() => handleStatusChange(node.id, status)}
-                  className={`px-2 py-1 rounded text-sm ${
-                    node.status === status
+                  key={s}
+                  onClick={() => handleStatusChange(node.id, s)}
+                  className={`px-3 py-1 rounded text-sm border ${
+                    node.status === s
                       ? "bg-black text-white"
-                      : "bg-white border"
+                      : "bg-white text-black"
                   }`}
                 >
-                  {status === "done"
-                    ? "済"
-                    : status === "waiting"
-                    ? "回答待"
-                    : status === "blocked"
-                    ? "差し戻し"
-                    : "未処理"}
+                  {s}
                 </button>
               ))}
             </div>
